@@ -1,0 +1,18 @@
+<section class="mood">
+  <h2>Mood giornaliero</h2>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <label for="moodText">Mood</label>
+    <textarea id="moodText" formControlName="moodText" rows="3" placeholder="Come ti senti oggi?"></textarea>
+    <div *ngIf="form.controls.moodText.touched && form.controls.moodText.invalid">
+      Il campo è obbligatorio (max 500).
+    </div>
+
+    <button type="submit" [disabled]="loading || form.invalid">Invia</button>
+    <button type="button" (click)="loadToday()" [disabled]="loading">Carica oggi</button>
+  </form>
+
+  <div *ngIf="loading">Caricamento...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+  <pre *ngIf="result">{{ result | json }}</pre>
+</section>
