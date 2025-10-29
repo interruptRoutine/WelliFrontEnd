@@ -1,0 +1,119 @@
+/* Stile per il contenitore del calendario */
+.calendar-container {
+  height: 90vh;
+  width: 90%;
+  max-width: 1400px;
+  margin: 2rem auto;
+
+  /* --- Effetto Vetro Smerigliato Chiaro --- */
+  background-color: rgba(255, 255, 255, 0.3); /* Vetro chiaro */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  padding: 25px;
+}
+
+/* --- Stili per FullCalendar (Light Mode su Vetro) --- */
+/* Testo generale scuro per leggibilità */
+:host ::ng-deep .fc {
+  color: #333 !important;
+}
+:host ::ng-deep .fc-daygrid-day-number,
+:host ::ng-deep .fc-col-header-cell-cushion {
+  color: #222; /* Numeri e giorni scuri */
+  text-decoration: none;
+  font-weight: 500;
+}
+:host ::ng-deep .fc-day-other .fc-daygrid-day-top {
+  opacity: 0.5; /* Giorni altri mesi */
+}
+
+/* Titolo (es. "Ottobre 2025") */
+:host ::ng-deep .fc .fc-toolbar-title {
+  font-size: 2em;
+  font-weight: 600;
+  color: #333; /* Testo scuro */
+}
+
+/* Bottoni (Oggi, Mese, Settimana...) */
+:host ::ng-deep .fc-button {
+  background-color: rgba(255, 255, 255, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  color: #333 !important; /* Testo scuro */
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease-in-out;
+  padding: 8px 12px !important;
+  font-weight: 500;
+}
+
+:host ::ng-deep .fc-button:hover,
+:host ::ng-deep .fc-button-active {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
+}
+
+/* Bottone "Oggi" (Azzurro Polvere) */
+:host ::ng-deep .fc-today-button {
+  background-color: #89b2f3 !important;
+  color: #FFF !important; /* Testo bianco */
+  border-color: #89b2f3 !important;
+  box-shadow: 0 2px 10px rgba(137, 178, 243, 0.4) !important;
+}
+
+/* Eventi */
+:host ::ng-deep .fc-event {
+  border-radius: 8px;
+  /* Usiamo l'azzurro polvere per gli eventi */
+  background-color: #89b2f3 !important;
+  border-color: #89b2f3 !important;
+  color: #FFF !important; /* Testo bianco */
+  padding: 4px 6px;
+  font-size: 0.9em;
+  font-weight: 500;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+
+:host ::ng-deep .fc-event:hover {
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transform: translateY(-1px);
+}
+
+/* Bordi interni del calendario */
+:host ::ng-deep .fc-daygrid-day,
+:host ::ng-deep .fc-timegrid-slot,
+:host ::ng-deep .fc-timegrid-axis,
+:host ::ng-deep .fc-col-header-cell,
+:host ::ng-deep .fc-scrollgrid-section > * {
+  border-color: rgba(255, 255, 255, 0.5) !important; /* Bordi chiari */
+}
+
+:host ::ng-deep .fc .fc-toolbar-chunk:last-child .fc-button-group {
+  /* Usa flexbox per gestire lo spazio */
+  display: flex;
+  gap: 8px; /* Aggiunge uno spazio di 8px TRA ogni bottone */
+}
+
+/* Opzionale: Rimuove il bordo che li univa prima */
+:host ::ng-deep .fc .fc-button-group > .fc-button {
+  margin: 0 !important; /* Rimuove margini aggiunti da FullCalendar */
+}
+
+:host ::ng-deep .fc .fc-daygrid-day.fc-day-today {
+  /* Usiamo il colore corallo (#ff8c66 -> rgb(255, 140, 102)) ma molto tenue */
+  background-color: rgba(255, 140, 102, 0.18) !important; /* Rosa/Corallo tenue */
+}
+
+/* Seleziona la colonna del giorno corrente nella vista TimeGrid (Settimana, Giorno) */
+:host ::ng-deep .fc .fc-timegrid-col.fc-day-today {
+  background-color: rgba(255, 140, 102, 0.1) !important; /* Rosa/Corallo ancora più tenue */
+}
+
+/* Opzionale: Cambia il colore del bordo del numero 'Oggi' per abbinarlo */
+:host ::ng-deep .mat-calendar-body-today:not(.mat-calendar-body-selected) .mat-calendar-body-cell-content {
+  color: #ff8c66 !important; /* Colore corallo per il numero 'oggi' */
+  border: 1px solid rgba(255, 140, 102, 0.5) !important; /* Bordo corallo tenue */
+}
