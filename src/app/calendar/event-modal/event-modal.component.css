@@ -1,0 +1,99 @@
+/* Stili per il contenitore del form */
+.event-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Spazio tra i campi */
+}
+
+/* Layout per le righe a 2 colonne */
+.row {
+  display: flex;
+  gap: 20px;
+}
+
+/* --- MODIFICA --- */
+/* Sostituisci .row > div con .form-field-wrapper */
+.form-field-wrapper {
+  flex: 1; /* Occupa metà spazio */
+}
+/* --- FINE MODIFICA --- */
+
+.row > mat-checkbox {
+  flex: 1;
+  display: flex;
+  align-items: center; /* Allinea il checkbox */
+}
+
+/* Layout per la riga Data/Ora */
+.date-row {
+  display: flex;
+  gap: 20px;
+}
+.date-row .date-field {
+  flex: 3; /* Più spazio per la data */
+}
+.date-row .time-field {
+  flex: 2; /* Meno spazio per l'ora */
+}
+
+
+/* STILE "DOLCE" PER I CAMPI (invariato) */
+:host ::ng-deep .mat-mdc-form-field {
+  width: 100%;
+}
+/* ... (tutti gli altri stili ::ng-deep invariati) ... */
+
+:host ::ng-deep .mat-mdc-form-field-flex {
+  background-color: rgba(255, 255, 255, 0.4) !important;
+  border-radius: 12px !important;
+  padding: 8px 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+:host ::ng-deep .mat-mdc-form-field-fieldset {
+  border: none !important;
+}
+
+:host ::ng-deep .mat-mdc-input-element,
+:host ::ng-deep .mat-mdc-select-value-text {
+  color: #222 !important;
+  font-weight: 500;
+}
+
+:host ::ng-deep .mat-mdc-label {
+  color: rgba(0, 0, 0, 0.6) !important;
+  font-weight: 400;
+  margin-top: -4px;
+}
+
+/* Stile per l'icona del calendario */
+:host ::ng-deep .mat-mdc-datepicker-toggle-icon {
+  color: #555 !important;
+}
+
+/* Stile per l'input 'color' */
+.color-input {
+  width: 100%;
+  height: 40px; /* Adatta l'altezza */
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* Stile per il Checkbox */
+:host ::ng-deep .mat-mdc-checkbox .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background {
+  background-color: #89b2f3 !important; /* Azzurro */
+  border-color: #89b2f3 !important;
+}
+:host ::ng-deep .mat-mdc-checkbox .mdc-checkbox__ripple {
+  display: none;
+}
+:host ::ng-deep .mat-mdc-checkbox .mdc-checkbox__background {
+  border-radius: 6px !important;
+}
+:host ::ng-deep .mat-mdc-checkbox + label {
+  font-weight: 500;
+  color: #333;
+}

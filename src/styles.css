@@ -1,1 +1,229 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Amiko:wght@400;600;700&display=swap');
+
+
+/* Stili globali per la body e l'HTML */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Verdana', sans-serif;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+}
+
+.calendar-theme-dark {
+  background-image: url('assets/images/aurora-borealis-landscape-sea.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: #ffffff; /* Testo bianco di default per il tema scuro */
+}
+
+.calendar-theme-light {
+  background-image: url('assets/images/beautiful-sunrise-reflecting-sea-creating-perfect-scenery-morning-walks.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: #222222; /* Testo scuro di default per il tema chiaro */
+}
+
+.font-amiko-dialog {
+  font-family: 'Amiko', sans-serif !important;
+}
+
+.font-verdana{
+  font-family: 'Verdana', sans-serif;
+}
+
+/* --- Override globale per Angular Material Dialog (Modal) --- */
+.mat-mdc-dialog-surface {
+  /* 1. VETRO SMERIGLIATO CHIARO (come la sidebar dell'immagine) */
+  background-color: rgba(255, 255, 255, 0.3) !important; /* Vetro chiaro */
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2) !important;
+  padding: 30px !important;
+  max-width: 600px !important;
+}
+
+/* 2. TITOLO DEL MODAL */
+.mat-mdc-dialog-title {
+  color: #222 !important; /* Testo scuro per leggibilità */
+  font-weight: 600;
+  font-size: 1.8em;
+  margin-bottom: 25px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  padding-bottom: 15px;
+  text-align: center;
+}
+
+mat-dialog-content {
+  padding: 0 !important;
+}
+
+/* 3. BOTTONI "DOLCI" */
+mat-dialog-actions {
+  padding: 25px 0 0 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  margin-top: 25px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.mat-mdc-button, .mat-mdc-flat-button, .mat-mdc-raised-button {
+  border-radius: 12px !important;
+  padding: 8px 20px !important;
+  font-weight: 500;
+  transition: all 0.3s ease !important;
+  box-shadow: none !important;
+}
+
+/* Bottone Salva (Azzurro Polvere) */
+.mat-mdc-raised-button.mat-primary {
+  background-color: #89b2f3 !important;
+  color: #FFF !important;
+  box-shadow: 0 4px 15px rgba(137, 178, 243, 0.4) !important;
+}
+.mat-mdc-raised-button.mat-primary:hover {
+  background-color: #7aa7e8 !important;
+  transform: translateY(-2px);
+}
+
+/* Bottone Elimina (Corallo) */
+.mat-mdc-raised-button.mat-warn {
+  background-color: #ff8c66 !important;
+  color: #FFF !important;
+  box-shadow: 0 4px 15px rgba(255, 140, 102, 0.4) !important;
+}
+.mat-mdc-raised-button.mat-warn:hover {
+  background-color: #ff7a50 !important;
+  transform: translateY(-2px);
+}
+
+/* Bottone Annulla */
+.mat-mdc-button {
+  color: #555 !important;
+}
+.mat-mdc-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.mat-mdc-select-panel {
+  background-color: rgba(255, 255, 255, 0.95) !important; /* Sfondo bianco quasi opaco */
+  backdrop-filter: blur(10px) !important; /* Mantiene un leggero effetto vetro */
+  -webkit-backdrop-filter: blur(10px) !important;
+  border-radius: 12px !important; /* Bordi arrotondati */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important; /* Ombra più definita */
+  border: 1px solid rgba(255, 255, 255, 0.5); /* Bordo chiaro */
+  margin-top: 8px !important; /* Sposta leggermente il pannello sotto il campo */
+}
+
+/* Stile per le singole opzioni */
+.mat-mdc-option {
+  color: #333 !important; /* Testo scuro per leggibilità */
+  font-weight: 500 !important;
+  padding: 10px 16px !important; /* Più padding interno */
+  min-height: 40px !important;
+}
+
+/* Opzione selezionata */
+.mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled) {
+  background-color: rgba(137, 178, 243, 0.2) !important; /* Sfondo azzurro polvere tenue */
+  color: #89b2f3 !important; /* Testo azzurro */
+}
+
+/* Opzione in stato hover/focus */
+.mat-mdc-option:hover:not(.mdc-list-item--disabled),
+.mat-mdc-option.mat-mdc-option-active {
+  background-color: rgba(0, 0, 0, 0.04) !important; /* Sfondo grigio chiaro al passaggio */
+}
+
+/* Rimuove l'ondulazione (ripple) per un look più pulito */
+.mat-mdc-option .mat-ripple-element {
+  display: none !important;
+}
+
+.mat-datepicker-content {
+  background-color: rgba(255, 255, 255, 0.95) !important; /* Sfondo bianco quasi opaco */
+  backdrop-filter: blur(10px) !important; /* Leggero effetto vetro */
+  -webkit-backdrop-filter: blur(10px) !important;
+  border-radius: 16px !important; /* Bordi arrotondati */
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15) !important; /* Ombra definita */
+  border: 1px solid rgba(255, 255, 255, 0.5); /* Bordo chiaro */
+  overflow: hidden; /* Nasconde angoli che potrebbero sporgere */
+}
+
+/* Header del calendario (Mese e Anno) */
+.mat-calendar-header {
+  padding: 15px 15px 5px 15px !important; /* Padding ajustato */
+  background-color: transparent !important; /* Rende lo sfondo header trasparente (prende quello del pannello) */
+}
+
+.mat-calendar-controls {
+  margin-bottom: 10px !important; /* Spazio sotto i controlli */
+}
+
+/* Bottoni Mese Precedente/Successivo e Selezione Mese/Anno */
+.mat-calendar .mat-icon-button {
+  color: #555 !important; /* Colore scuro per le icone */
+}
+.mat-calendar .mat-icon-button:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important; /* Leggero sfondo hover */
+}
+
+.mat-calendar-period-button {
+  font-weight: 600 !important;
+  color: #333 !important; /* Testo Mese/Anno scuro */
+  font-size: 1.1em !important;
+}
+
+/* Giorni della settimana (L, M, M...) */
+.mat-calendar-table-header th {
+  color: #777 !important; /* Grigio per i nomi dei giorni */
+  font-weight: 500 !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important; /* Linea separatrice */
+}
+
+/* Celle dei giorni */
+.mat-calendar-body-cell {
+  border-radius: 8px !important; /* Celle più arrotondate */
+  border-width: 0 !important; /* Rimuove il bordo di default */
+  transition: background-color 0.2s ease;
+}
+
+/* Testo dentro le celle */
+.mat-calendar-body-cell-content {
+  color: #333 !important; /* Testo scuro */
+  font-weight: 500 !important;
+  border-width: 0 !important;
+  box-shadow: none !important; /* Rimuove l'ombra di default al focus */
+}
+
+/* Giorno corrente */
+.mat-calendar-body-today:not(.mat-calendar-body-selected) .mat-calendar-body-cell-content {
+  color: #89b2f3 !important; /* Colore azzurro per 'oggi' */
+  border: 1px solid #89b2f3 !important;
+}
+
+/* Giorno selezionato */
+.mat-calendar-body-selected .mat-calendar-body-cell-content {
+  background-color: #89b2f3 !important; /* Azzurro pieno per selezionato */
+  color: #FFF !important; /* Testo bianco */
+  box-shadow: 0 2px 10px rgba(137, 178, 243, 0.4) !important; /* Ombra azzurra */
+}
+
+/* Giorno in stato hover/focus */
+.mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover .mat-calendar-body-cell-content,
+.cdk-keyboard-focused .mat-calendar-body-active > .mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+  background-color: rgba(137, 178, 243, 0.2) !important; /* Sfondo azzurro tenue */
+}
+
+.font-amiko-dialog {
+  /* Forza il font su tutto il contenitore del dialogo
+     e i suoi figli */
+  font-family: 'Amiko', sans-serif !important;
+}
