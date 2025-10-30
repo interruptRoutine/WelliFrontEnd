@@ -1,15 +1,23 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import {AuthService} from './core/auth/auth.service';
+import {FormsModule} from '@angular/forms';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, FormsModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('WelliFrontEnd');
+  email:string="";
+  password:string="";
 
-  constructor(private http: HttpClient) {}
+  constructor(public auth:AuthService) {}
+
+  logga()
+  {
+    this.auth.login(this.email,this.password);
+  }
 }
