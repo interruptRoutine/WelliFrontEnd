@@ -208,6 +208,7 @@ export class CalendarViewComponent implements AfterViewInit {
     });
   }
 
+
   // Funzione helper (invariata)
   private convertDtoToEvent(dto: EventDto): EventInput {
     return {
@@ -216,7 +217,7 @@ export class CalendarViewComponent implements AfterViewInit {
       start: dto.start, // Il DTO ora ha la stringa pulita
       end: dto.end,
       allDay: dto.isAllDay,
-      backgroundColor: dto.color,
+      color: dto.color,
       extendedProps: {
         description: dto.description,
         showAs: dto.showAs,
