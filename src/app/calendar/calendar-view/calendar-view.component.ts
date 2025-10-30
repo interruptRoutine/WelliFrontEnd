@@ -1,14 +1,21 @@
-import {Component, LOCALE_ID, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 // Import di FullCalendar
 import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
-import { CalendarOptions, DateSelectArg, EventClickArg, EventChangeArg } from '@fullcalendar/core';
+import {
+  CalendarApi, // <-- Importa CalendarApi
+  CalendarOptions,
+  DateSelectArg,
+  EventClickArg,
+  EventChangeArg,
+  EventInput // <-- Importa EventInput per il tipo
+} from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
-import rrulePlugin from '@fullcalendar/rrule'; // Per la ricorrenza
+import rrulePlugin from '@fullcalendar/rrule';
 import itLocale from '@fullcalendar/core/locales/it';
 
 // Import di Angular Material per i Modal
@@ -23,27 +30,28 @@ import { EventModalComponent } from '../event-modal/event-modal.component';
   standalone: true,
   imports: [
     CommonModule,
-    FullCalendarModule, // Importa FullCalendar QUI
-    MatDialogModule     // Importa MatDialog QUI
+    FullCalendarModule,
+    MatDialogModule
   ],
   templateUrl: './calendar-view.component.html',
   styleUrls: ['./calendar-view.component.css']
 })
-export class CalendarViewComponent {
+// Pulito: rimosso OnInit, OnDestroy (non usati)
+export class CalendarViewComponent implements AfterViewInit {
 
   @ViewChild('calendar') calendarComponent!: FullCalendarComponent;
 
-  // Dichiariamo calendarOptions qui
+  // 1. DICHIARA LA VARIABILE CHE MANCAVA
+  private calendarApi!: CalendarApi;
+
   calendarOptions: CalendarOptions;
 
   constructor(
     private eventService: EventDataService,
     public dialog: MatDialog
   ) {
-
-    // --- CORREZIONE 1: Inizializza calendarOptions nel costruttore ---
-    // In questo modo, 'this' è disponibile e 'this.eventService' è definito.
     this.calendarOptions = {
+      // ... (tutte le tue opzioni plugins, headerToolbar, ecc.) ...
       plugins: [
         dayGridPlugin,
         timeGridPlugin,
@@ -60,17 +68,14 @@ export class CalendarViewComponent {
       weekends: true,
       editable: true,
       selectable: true,
-
-      // Ora 'this.eventService.loadEvents' è sicuro da usare
       events: this.eventService.loadEvents,
-
       select: this.handleDateSelect.bind(this),
       eventClick: this.handleEventClick.bind(this),
       eventChange: this.handleEventChange.bind(this),
       slotLabelFormat: {
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false // 3. Forza il formato 24 ore
+        hour12: false
       },
       eventTimeFormat: {
         hour: '2-digit',
@@ -82,6 +87,15 @@ export class CalendarViewComponent {
     };
   }
 
+  // 2. INIZIALIZZA L'API DOPO CHE LA VISTA È PRONTA
+  ngAfterViewInit() {
+    if (this.calendarComponent) {
+      this.calendarApi = this.calendarComponent.getApi();
+    } else {
+      console.error("ERRORE: #calendar non trovato.");
+    }
+  }
+
   // APRE MODAL PER NUOVO EVENTO
   handleDateSelect(selectInfo: DateSelectArg) {
     selectInfo.view.calendar.unselect();
@@ -90,14 +104,13 @@ export class CalendarViewComponent {
       end: selectInfo.endStr,
       isAllDay: selectInfo.allDay
     };
-    this.openEventModal(dataForModal);
+    // Chiama la funzione centralizzata
+    this.openEventModal(dataForModal, true);
   }
 
   // APRE MODAL PER EVENTO ESISTENTE
   handleEventClick(clickInfo: EventClickArg) {
     const event = clickInfo.event;
-
-    // --- CORREZIONE 2: Usa extendedProps per 'recurrenceRule' ---
     const dataForModal = {
       ...event.extendedProps,
       id: event.id,
@@ -105,59 +118,111 @@ export class CalendarViewComponent {
       start: event.startStr,
       end: event.endStr,
       isAllDay: event.allDay,
-      color: event.backgroundColor,
-
-      // Usa il campo che abbiamo salvato in extendedProps, non l'oggetto rrule
-      recurrenceRule: event.extendedProps['recurrenceRule']
+      color: event.backgroundColor
     };
-
-    this.openEventModal(dataForModal, event.id);
+    // Chiama la funzione centralizzata
+    this.openEventModal(dataForModal, false);
   }
 
-  // SALVA DRAG-AND-DROP
+  // 3. SALVA DRAG-AND-DROP (AGGIUNTO IL SUBSCRIBE MANCANTE)
   handleEventChange(changeInfo: EventChangeArg) {
     const event = changeInfo.event;
-    const endDate = event.endStr || event.startStr;
 
-    // --- CORREZIONE 2 (anche qui): Usa extendedProps ---
+    let startStr: string;
+    let endStr: string;
+
+    if (event.allDay) {
+      startStr = event.startStr;
+      endStr = event.endStr || startStr;
+    } else {
+      // Pulisce il fuso orario per il server Java
+      startStr = event.startStr.substring(0, 19);
+      endStr = event.endStr ? event.endStr.substring(0, 19) : startStr;
+    }
+
     const dto: EventDto = {
       title: event.title,
-      description: event.extendedProps['description'],
-      start: event.startStr,
-      end: endDate,
+      start: startStr,
+      end: endStr,
       isAllDay: event.allDay,
-      color: event.backgroundColor,
-      showAs: event.extendedProps['showAs'],
-
-      // Usa il campo che abbiamo salvato in extendedProps
-      recurrenceRule: event.extendedProps['recurrenceRule'],
-
-      reminderMinutes: event.extendedProps['reminderMinutes'],
-      type: event.extendedProps['type']
+      description: event.extendedProps['description'] ?? null,
+      color: event.backgroundColor ?? null,
+      showAs: event.extendedProps['showAs'] ?? 'BUSY',
+      reminderMinutes: event.extendedProps['reminderMinutes'] ?? null,
+      type: event.extendedProps['type'] ?? null
     };
 
+    // --- AGGIUNTO BLOCCO SALVATAGGIO MANCANTE ---
     this.eventService.updateEvent(event.id, dto).subscribe({
+      next: () => {
+        console.log('Drag/Resize salvato.');
+      },
       error: (err) => {
-        console.error("Errore durante l'aggiornamento (drag/resize):", err);
-        changeInfo.revert();
+        console.error("Errore salvataggio (drag/resize):", err.error);
+        changeInfo.revert(); // Annulla la modifica
       }
     });
+    // ----------------------------------------------
   }
 
-  // FUNZIONE APRI-MODAL (invariata)
-  openEventModal(data: any, id?: string) {
+  openEventModal(data: any, isNew: boolean) {
     const dialogRef = this.dialog.open(EventModalComponent, {
       width: '600px',
       data: {
         eventData: data,
-        id: id
-      }
+        isNew: isNew
+      },
+      panelClass: 'font-verdana'
     });
 
+    // Logica di aggiornamento centralizzata
     dialogRef.afterClosed().subscribe(result => {
-      if (result === true) {
-        this.calendarComponent.getApi().refetchEvents();
+      // 'result' può essere l'evento DTO salvato, la stringa 'DELETED', o null (annullamento)
+      if (!this.calendarApi) return;
+
+      const eventId = data.id; // L'ID originale dell'evento (esistente o no)
+      const existingEvent = this.calendarApi.getEventById(eventId);
+
+      if (result === 'DELETED') {
+        // 1. GESTIONE ELIMINAZIONE
+        if (existingEvent) {
+          existingEvent.remove();
+          console.log(`Evento ID ${eventId} rimosso dal calendario.`);
+        }
+        return;
+      }
+
+      if (result && result.id) { // Controlla che result non sia null e abbia un ID (quindi è un DTO Evento salvato)
+        // 2. GESTIONE CREAZIONE O MODIFICA
+
+        const eventInput = this.convertDtoToEvent(result); // DTO -> Evento FullCalendar
+
+        if (existingEvent) {
+          // Se esisteva (Modifica), rimuoviamo la versione vecchia
+          existingEvent.remove();
+        }
+
+        // Aggiunge la nuova versione (valido sia per new che per update)
+        this.calendarApi.addEvent(eventInput);
       }
     });
+  }
+
+  // Funzione helper (invariata)
+  private convertDtoToEvent(dto: EventDto): EventInput {
+    return {
+      id: dto.id,
+      title: dto.title,
+      start: dto.start, // Il DTO ora ha la stringa pulita
+      end: dto.end,
+      allDay: dto.isAllDay,
+      backgroundColor: dto.color,
+      extendedProps: {
+        description: dto.description,
+        showAs: dto.showAs,
+        type: dto.type,
+        reminderMinutes: dto.reminderMinutes
+      }
+    };
   }
 }

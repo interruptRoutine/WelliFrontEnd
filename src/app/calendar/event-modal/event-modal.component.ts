@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { CommonModule, formatDate } from '@angular/common'; // Importa formatDate
+import { CommonModule, formatDate } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { EventDataService, EventDto } from '../event-data.service';
@@ -10,8 +10,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker'; // <-- IMPORTANTE
-import { MatNativeDateModule } from '@angular/material/core';      // <-- IMPORTANTE
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
 @Component({
   selector: 'app-event-modal',
@@ -25,8 +25,8 @@ import { MatNativeDateModule } from '@angular/material/core';      // <-- IMPORT
     MatButtonModule,
     MatCheckboxModule,
     MatSelectModule,
-    MatDatepickerModule,   // <-- Aggiunto
-    MatNativeDateModule    // <-- Aggiunto
+    MatDatepickerModule,
+    MatNativeDateModule
   ],
   templateUrl: './event-modal.component.html',
   styleUrls: ['./event-modal.component.css']
@@ -45,44 +45,58 @@ export class EventModalComponent implements OnInit {
     public dialogRef: MatDialogRef<EventModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
-    this.isNew = !data.id;
-    this.eventId = data.id || null;
+    this.isNew = data.isNew;
+    this.eventId = data.eventData?.id || null;
     const event = data.eventData || {};
 
-    const startDate = new Date(event.start || new Date());
-    const endDate = new Date(event.end || new Date());
+    // Inizializzazione delle date: Le stringhe ISO di FullCalendar vengono convertite in Date.
+    const startDate = event.start ? new Date(event.start) : new Date();
+    const endDate = event.end ? new Date(event.end) : new Date(startDate.getTime() + 60 * 60 * 1000); // Default +1 ora
 
-    // Popola la lista degli orari (es. ogni 30 min)
     this.generateTimeSlots(30);
+
+    // ✨ CORREZIONE RICHIESTA: Usa l'ora della data fornita (00:00 se non specificata) ✨
+    // Ho rimosso completamente la logica dell'ora corrente.
+    const initialStartTime = this.formatTimeForInput(startDate);
+    const initialEndTime = this.formatTimeForInput(endDate);
 
     this.eventForm = this.fb.group({
       title: [event.title || '', Validators.required],
 
       startDate: [startDate, Validators.required],
-      startTime: [this.formatTimeForInput(startDate), Validators.required],
+      startTime: [initialStartTime, Validators.required],
 
       endDate: [endDate, Validators.required],
-      endTime: [this.formatTimeForInput(endDate), Validators.required],
+      endTime: [initialEndTime, Validators.required],
 
       isAllDay: [event.isAllDay || false],
 
-      // --- MODIFICA VALORI DI DEFAULT ---
-      // Se event.description esiste E non è "Nessuna descrizione", usalo. Altrimenti, stringa vuota.
       description: [(event.description && event.description !== "Nessuna descrizione") ? event.description : ''],
-      // Se event.type esiste E non è "Nessuno", usalo. Altrimenti, stringa vuota.
       type: [(event.type && event.type !== "Nessuno") ? event.type : ''],
-      // 'null' è un valore valido qui, significa "Nessun promemoria"
       reminderMinutes: [event.reminderMinutes || null],
-      // --- FINE MODIFICA ---
 
       color: [event.color || '#89b2f3'],
       showAs: [event.showAs || 'BUSY', Validators.required]
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void
+  {
+    // Logica di gestione isAllDay per disabilitare/abilitare l'ora se necessario
+    this.eventForm.get('isAllDay')?.valueChanges.subscribe(isAllDay => {
+      const startTimeControl = this.eventForm.get('startTime');
+      const endTimeControl = this.eventForm.get('endTime');
 
-  // --- NUOVO: Genera gli slot orari ---
+      if (isAllDay) {
+        startTimeControl?.disable();
+        endTimeControl?.disable();
+      } else {
+        startTimeControl?.enable();
+        endTimeControl?.enable();
+      }
+    });
+  }
+
   private generateTimeSlots(intervalMinutes: number) {
     this.timeSlots = [];
     for (let hour = 0; hour < 24; hour++) {
@@ -94,80 +108,122 @@ export class EventModalComponent implements OnInit {
     }
   }
 
-  // Helper per formattare solo l'ora (es. "14:30")
+  /**
+   * Helper che estrae HH:mm dalla data, mostrerà 00:00 se l'ora è midnight.
+   */
   private formatTimeForInput(date: Date): string {
     return formatDate(date, 'HH:mm', 'en-US');
   }
 
-  // Helper per combinare Data e Ora in una stringa ISO
-  private combineDateAndTime(date: Date, time: string): string {
-    const [hours, minutes] = time.split(':');
-    date.setHours(parseInt(hours, 10));
-    date.setMinutes(parseInt(minutes, 10));
-    date.setSeconds(0);
-    // Rimuove la 'Z' finale per mandare l'ora locale al backend
-    // che la interpreterà come LocalDateTime
-    return date.toISOString().substring(0, 19);
+  /**
+   * ✨ RIMOSSA: Non serve più la logica complessa sull'ora corrente.
+   private getInitialTimeForModal(date: Date, isAllDay: boolean, isEnd: boolean = false): string {
+   // ... (Logica rimossa per rispettare la tua richiesta)
+   return this.formatTimeForInput(date);
+   }
+   */
+
+  /**
+   * Converte un oggetto Date (dal datepicker) in una stringa 'YYYY-MM-DD'
+   * usando i suoi valori locali, per evitare la conversione UTC.
+   */
+  private toLocalDateString(date: Date): string {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  /**
+   * Genera la stringa finale 'YYYY-MM-DDTHH:mm:ss' per il backend (LocalDateTime).
+   * La parte 'time' proviene dal MatSelect.
+   */
+  private toLocalDateTimeString(date: Date, time: string, isAllDay: boolean): string {
+    const datePart = this.toLocalDateString(date);
+
+    // Se all-day, usa T00:00:00. Altrimenti usa l'ora selezionata.
+    const timePart = isAllDay ? '00:00' : (time || '00:00');
+
+    return `${datePart}T${timePart}:00`;
   }
 
   onSave() {
-    if (this.eventForm.invalid) return;
+    this.eventForm.markAllAsTouched();
+    if (this.eventForm.invalid) {
+      console.warn('Form non valido!');
+      return;
+    }
+
     this.isLoading = true;
+    const formValues = this.eventForm.getRawValue();
 
-    const formVal = this.eventForm.value;
+    // Determina le date/ore corrette per il DTO
+    const startForDto = this.toLocalDateTimeString(
+      formValues.startDate,
+      formValues.startTime,
+      formValues.isAllDay
+    );
 
-    const startDateTime = this.combineDateAndTime(formVal.startDate, formVal.startTime);
-    const endDateTime = this.combineDateAndTime(formVal.endDate, formVal.endTime);
+    const endForDto = this.toLocalDateTimeString(
+      formValues.endDate,
+      formValues.endTime,
+      formValues.isAllDay
+    );
 
-    // --- MODIFICA SALVATAGGIO DTO ---
+    // Costruisci il DTO
     const dto: EventDto = {
-      title: formVal.title,
-      start: startDateTime,
-      end: endDateTime,
-      isAllDay: formVal.isAllDay,
+      title: formValues.title,
+      description: formValues.description ?? null,
 
-      // Se il campo è vuoto, invia il default. Altrimenti, invia il valore.
-      description: formVal.description || 'Nessuna descrizione',
-      type: formVal.type || 'Nessuno',
+      start: startForDto,
+      end: endForDto,
 
-      // 'reminderMinutes' può essere inviato come 'null'
-      reminderMinutes: formVal.reminderMinutes,
-
-      color: formVal.color,
-      showAs: formVal.showAs
+      isAllDay: formValues.isAllDay,
+      color: formValues.color,
+      showAs: formValues.showAs ?? 'BUSY',
+      reminderMinutes: formValues.reminderMinutes ?? null,
+      type: formValues.type ?? null
     };
 
-    const request = this.isNew
+    // Chiama il servizio corretto
+    const saveOperation = this.isNew
       ? this.eventService.createEvent(dto)
       : this.eventService.updateEvent(this.eventId!, dto);
 
-    request.subscribe({
-      next: () => this.dialogRef.close(true),
-      error: (err) => {
-        console.error(err);
+    saveOperation.subscribe({
+      next: (savedEvent) => {
         this.isLoading = false;
+        // Chiudi il modal restituendo l'evento salvato (che ora include l'ID se era nuovo)
+        this.dialogRef.close(savedEvent);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error('ERRORE SALVATAGGIO MODAL:', err.error);
+        this.dialogRef.close(null);
       }
     });
   }
 
   onDelete() {
-    if (this.isNew || !this.eventId) return; // Non si può eliminare un evento nuovo
+    if (this.isNew || !this.eventId) return;
 
     this.isLoading = true;
     this.eventService.deleteEvent(this.eventId!).subscribe({
       next: () => {
         this.isLoading = false;
-        this.dialogRef.close(true); // Chiudi e ricarica il calendario
+        // Chiudi restituendo una stringa 'DELETED'
+        this.dialogRef.close('DELETED');
       },
       error: (err) => {
         console.error("Errore durante l'eliminazione:", err);
         this.isLoading = false;
+        this.dialogRef.close(null); // Chiudi senza aggiornare
       }
     });
   }
 
   onCancel(): void {
-    // Chiude il dialogo passando 'false' (o nessun valore)
-    // per indicare che non è stato salvato nulla.
-    this.dialogRef.close(false);
-  }}
+    this.dialogRef.close(null); // Restituisce null per indicare annullamento
+  }
+}
